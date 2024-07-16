@@ -156,7 +156,7 @@
         </div>
 
         <div class="col-5 text-center d-none d-lg-block">
-            <img src="{{ url('/asset/img/teacher.png') }}" class="img-fluid " alt="">
+            <img src="{{ url('/asset/img/teacher.png') }}" class="img-fluid-icon " alt="">
         </div>
     </div>
 

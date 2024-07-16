@@ -168,7 +168,7 @@
             </div>
 
             <div class="col-5 text-center d-none d-lg-block">
-                <img src="{{ url('/asset/img/work.png') }}" class="img-fluid w-100" alt="">
+                <img src="{{ url('/asset/img/work.png') }}" class="img-fluid-icon w-100" alt="">
             </div>
         </div>
     </div>

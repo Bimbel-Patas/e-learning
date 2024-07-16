@@ -124,8 +124,8 @@
                             </div>
                         @else
                             <div class="text-center">
-                                <img src="{{ url('/asset/img/not-found.png') }}" alt="" class="img-fluid w-50 mb-2"
-                                    srcset="">
+                                <img src="{{ url('/asset/img/not-found.png') }}" alt=""
+                                    class="img-fluid-icon w-50 mb-2" srcset="">
                                 <br>
                                 <Strong>Data belum ditambahkan</Strong>
                             </div>
@@ -136,7 +136,7 @@
             </div>
 
             <div class="col-6 text-center d-none d-lg-block">
-                <img src="{{ url('/asset/img/exam.png') }}" class="img-fluid w-100" alt="">
+                <img src="{{ url('/asset/img/exam.png') }}" class="img-fluid-icon w-100" alt="">
             </div>
         </div>
     </div>
