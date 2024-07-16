@@ -312,7 +312,7 @@
                                 <th scope="col">Time</th>
                                 <th scope="col">Tipe Soal</th>
                                 <th scope="col">Jumlah Soal</th>
-                                <th scope="col">Due Date</th>
+                                <!-- <th scope="col">Due Date</th> -->
                                 @if (Auth()->User()->roles_id == 2)
                                     <th scope="col">Created at</th>
                                 @endif
@@ -348,7 +348,7 @@
                                             <td><span class="badge p-2 badge-dark">Kecermatan</span></td>
                                             <td>{{ count($key->Kecermatan) }}</td>
                                         @endif
-                                        <td>
+                                        <!-- <td>
                                             @php
                                                 $dueDate = \Carbon\Carbon::parse($key->due);
                                                 $now = \Carbon\Carbon::now();
@@ -363,7 +363,7 @@
                                                     <span class="badge badge-primary">{{ $daysUntilDue }} hari lagi</span>
                                                 @endif
                                             @endif
-                                        </td>
+                                        </td> -->
                                         @if (Auth()->User()->roles_id == 2)
                                             <td> {{ $key->created_at->format('d F Y H:i') }}</td>
                                             <td>
@@ -391,8 +391,8 @@
                                                 <a
                                                     href="{{ route('ujianAccess', ['token' => encrypt($key->id), 'kelasMapelId' => encrypt($key['kelas_mapel_id']), 'kelasId' => $kelas['id'], 'mapelId' => $mapel['id']]) }}">
                                                     <button type="button" class="btn btn-primary"><i
-                                                            class="fa-regular fa-eye fa-xl"></i>
-                                                        View</button>
+                                                            class="fa-regular  fa-xl"></i>
+                                                        Kerjakan</button>
                                                 </a>
                                             </td>
                                         @endif
