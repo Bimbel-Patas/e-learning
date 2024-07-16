@@ -549,6 +549,11 @@ mark {
     height: 80%;
     border-radius: 100%;
 }
+.img-fluid-icon {
+    max-width: 80%;
+    height: 80%;
+    border-radius: 20%;
+}
 
 .img-thumbnail {
     padding: 0.25rem;

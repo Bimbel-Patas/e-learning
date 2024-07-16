@@ -2,7 +2,7 @@
 @section('container')
     <div class="row-login">
         {{-- Bagian Kiri --}}
-        <div class="col-sm-5 col-12 col-md-4" style="margin-top: 0px;">
+        <div class="col-sm-12 col-lg-6 col-md-8" style="margin-top: 0px;">
 
             {{-- Tampilan animasi untuk perangkat mobile --}}
             {{-- <div class="col-sm-7 col-md-8 col-12 text-center d-block d-sm-none">
