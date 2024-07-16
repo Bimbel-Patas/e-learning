@@ -51,24 +51,24 @@
      @if (Auth()->User()->roles_id == 1)
          <!-- Nav Item - Pages Collapse Menu -->
 
-         <li class="nav-item {{ Request::is('data-pengajar*') ? 'active' : '' }} animate-btn">
-             <a class="nav-link" href="{{ route('viewPengajar') }}"> <i class="fa-solid fa-chalkboard-user"></i>
-                 <span>Data Pengajar</span></a>
-         </li>
-
          <li class="nav-item {{ Request::is('data-mapel*') ? 'active' : '' }} animate-btn">
              <a class="nav-link" href="{{ route('viewMapel') }}"><i class="fa-solid fa-book"></i>
                  <span>Mata Pelajaran</span></a>
          </li>
-
          <li class="nav-item {{ Request::is('data-kelas*') ? 'active' : '' }} animate-btn">
              <a class="nav-link" href="{{ route('viewKelas') }}"><i class="fa-solid fa-school-flag"></i>
                  <span>Kelas</span></a>
          </li>
 
+         <li class="nav-item {{ Request::is('data-pengajar*') ? 'active' : '' }} animate-btn">
+             <a class="nav-link" href="{{ route('viewPengajar') }}"> <i class="fa-solid fa-chalkboard-user"></i>
+                 <span>Data Pengajar</span></a>
+         </li>
+
          <li class="nav-item {{ Request::is('data-siswa*') ? 'active' : '' }} animate-btn">
              <a class="nav-link" href="{{ route('viewSiswa') }}"><i class="fa-solid fa-users"></i>
                  <span>Data Siswa</span></a>
+             
          </li>
 
          <!-- Divider -->

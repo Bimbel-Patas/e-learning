@@ -1,23 +1,23 @@
 @extends('layout.template.loginRegistTemplate')
 @section('container')
-    <div class="row">
+    <div class="row-login">
         {{-- Bagian Kiri --}}
-        <div class="col-sm-5 col-12 col-md-4" style="margin-top: 50px;">
+        <div class="col-sm-5 col-12 col-md-4" style="margin-top: 0px;">
 
             {{-- Tampilan animasi untuk perangkat mobile --}}
-            <div class="col-sm-7 col-md-8 col-12 text-center d-block d-sm-none">
+            {{-- <div class="col-sm-7 col-md-8 col-12 text-center d-block d-sm-none">
                 <div id="anim2" class="p-4"></div>
-            </div>
+            </div> --}}
 
             {{-- Logo CBT --}}
-            <div class="col-12 mt-4">
+            {{-- <div class="col-12 mt-4">
                 <img src="asset/img/cbt-b.png" width="400px" class="img-fluid" alt="">
-            </div>
+            </div> --}}
 
             {{-- Kartu Registrasi --}}
             <div class="card px-1 py-4 mt-4">
                 <div class="card-body">
-
+                    <h1>Registrasi</h1>
                     {{-- Mulai Form Registrasi --}}
                     <form action="{{ route('validate') }}" method="POST">
                         @csrf
@@ -100,9 +100,9 @@
                         <div class="row">
                             <div class="col-sm-12 mb-3">
                                 <div class="form-group">
-                                    <label for="email">Nomor Induk Siswa (NIS) : </label>
+                                    <label for="email">Kode Peserta : </label>
                                     <input class="form-control" id="text" name="nis"
-                                        placeholder="Masukan NIS anda..." value="{{ old('nis') }}">
+                                        placeholder="Masukan Kode Peserta anda..." value="{{ old('nis') }}">
                                     @error('nis')
                                         <div class="text-danger small">
                                             {{ $message }}
@@ -135,9 +135,9 @@
         </div>
 
         {{-- Bagian Kanan --}}
-        <div class="col-sm-7 col-md-8 mt-4 col-12 text-center d-none d-sm-block">
-            <div id="anim" class="p-4"></div>
-            {{-- <img src="asset/img/illustration-1.jpg" width="700px" class=" img-fluid" alt=""> --}}
-        </div>
+        {{-- <div class="col-sm-7 col-md-8 mt-4 col-12 text-center d-none d-sm-block">
+            <div id="anim" class="p-4"></div> --}}
+        {{-- <img src="asset/img/illustration-1.jpg" width="700px" class=" img-fluid" alt=""> --}}
+        {{-- </div> --}}
     </div>
 @endsection
