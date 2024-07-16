@@ -34,9 +34,9 @@
                     <div class="col-lg-6">
                         <h1 class=" fw-bold text-body-emphasis lh-1 mb-3">{{ $kelas['name'] }}</h1>
                         <p class="lead">Selamat datang!, Selamat belajar!</p>
-                        <button class="btn btn-outline-primary" onclick="getData('{{ $kelas['name'] }}')"
+                        <!-- <button class="btn btn-outline-primary" onclick="getData('{{ $kelas['name'] }}')"
                             data-bs-toggle="modal" data-bs-target="#modal-view"><i class="fa-solid fa-users"></i> View
-                            Siswa</button>
+                            Siswa</button> -->
                     </div>
                 </div>
             </div>

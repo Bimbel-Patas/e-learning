@@ -69,13 +69,13 @@
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <strong>Academify-CBT</strong> made by Oktaven Software 2023 discover more
-                        built-in app via <a href="#">This Link</a>
-                    </div>
-                </div>
-            </footer>
+    <div class="container my-auto">
+        <div class="copyright text-center my-auto">
+            <span style="font-weight: bold; font-size: larger;">BIMBEL PATAS</span> <br> Pacu Prestasi bersama Bimbel Patas!
+        </div>
+    </div>
+</footer>
+
             <!-- End of Footer -->
 
         </div>

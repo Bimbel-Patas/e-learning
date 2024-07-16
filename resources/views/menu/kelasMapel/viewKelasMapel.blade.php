@@ -24,7 +24,7 @@
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </a> {{ $mapel['name'] }}
-                <span class="badge badge-secondary">{{ $kelas['name'] }}</span>
+                <!-- <span class="badge badge-secondary">{{ $kelas['name'] }}</span> -->
             </h1>
         </div>
     </div>
@@ -37,7 +37,7 @@
         </div>
     @endif
 
-    {{-- Informasi Mata Pelajaran --}}
+    <!-- {{-- Informasi Mata Pelajaran --}}
     <div class="bg-body-secondary rounded-4 mb-4">
         <div class="container col-xxl-8 px-4 py-5 ">
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
@@ -287,7 +287,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     {{-- Section Ujian --}}
     <div class="mb-4 ps-4 pe-4">
