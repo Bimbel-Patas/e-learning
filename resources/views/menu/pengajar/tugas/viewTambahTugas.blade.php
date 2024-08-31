@@ -106,7 +106,7 @@
 
 
     {{-- Script yang dibutuhkan --}}
-    <script src="https://cdn.tiny.cloud/1/owul23wv0iajhyb6jcltjhj0yufndfa0srzpliww43lp6n5d/tinymce/6/tinymce.min.js"
+    <script src="https://cdn.tiny.cloud/1/08zf8cyeimpxrp7cayepbetteafsdh873gi3db44558j03ll/tinymce/6/tinymce.min.js"
         referrerpolicy="origin"></script>;
 
     <script src="{{ url('/asset/js/rich-text-editor.js') }}"></script>

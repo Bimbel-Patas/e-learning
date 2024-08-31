@@ -19,7 +19,6 @@ use App\Models\UserJawabanKecermatan;
 
 class UjianController extends Controller
 {
-    //
     public function viewPilihTipeUjian(Request $request)
     {
         $id = decrypt($request->token);
@@ -33,14 +32,11 @@ class UjianController extends Controller
 
     public function destroyUjian(Request $request)
     {
-        // Dapatkan Id Materi dari Inputan Form request
         $ujianId = $request->hapusId;
         $tipe = $request->tipe;
 
-        // Logika untuk memeriksa apakah pengguna yang sudah login memiliki akses editor
         foreach (Auth()->User()->EditorAccess as $key) {
             if ($key->kelas_mapel_id == $request->kelasMapelId) {
-
                 Ujian::where('id', $ujianId)->delete();
 
                 if ($tipe == 'multiple') {
@@ -58,11 +54,9 @@ class UjianController extends Controller
 
     public function viewCreateUjian(Request $request)
     {
-
         $id = decrypt($request->token);
         $roles = DashboardController::getRolesName();
         $mapel = Mapel::where('id', $request->mapelId)->first();
-
         $assignedKelas = DashboardController::getAssignedClass();
 
         return view('menu.pengajar.ujian.viewTambahUjian', ['assignedKelas' => $assignedKelas, 'tipe' => $request->type, 'title' => 'Tambah Ujian', 'roles' => $roles, 'kelasId' => $id, 'mapel' => $mapel]);
@@ -70,23 +64,14 @@ class UjianController extends Controller
 
     public function createUjian(Request $request)
     {
-        // dd($request->input());
-
-        if (!$request->name) {
-            $name = 'Ujian';
-        }
-
+        $name = $request->name ?? 'Ujian';
         $id = decrypt($request->kelasId);
         $kelasMapel = KelasMapel::where('mapel_id', $request->mapelId)->where('kelas_id', $id)->first();
-        $isHidden = 1;
-
-        if ($request->opened) {
-            $isHidden = 0;
-        }
-        // dd($isHidden);
+        $isHidden = $request->opened ? 0 : 1;
         $tanggalWaktuIndonesia = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $request->due);
+
         $data = [
-            'name' => $request->name,
+            'name' => $name,
             'isHidden' => $isHidden,
             'kelas_mapel_id' => $kelasMapel['id'],
             'tipe' => $request->tipe,
@@ -97,91 +82,53 @@ class UjianController extends Controller
         $ujian = Ujian::create($data);
 
         if ($request->tipe == 'essay') {
-            if ($request->pertanyaan) {
-                foreach ($request->pertanyaan as $key) {
-                    $data = [
+            foreach ($request->pertanyaan as $key) {
+                if ($key) {
+                    SoalUjianEssay::create([
                         'ujian_id' => $ujian->id,
                         'soal' => $key,
-                    ];
-
-                    if ($key) {
-                        SoalUjianEssay::create($data);
-                    }
+                    ]);
                 }
             }
         } elseif ($request->tipe == 'multiple') {
-            if ($request->pertanyaan) {
-                for ($i = 0; $i < count($request->pertanyaan); $i++) {
-                    $d = null;
-                    $e = null;
+            for ($i = 0; $i < count($request->pertanyaan); $i++) {
+                $d = $request->d[$i] ?? null;
+                $e = $request->e[$i] ?? null;
 
-                    if ($request->d[$i]) {
-                        $d = $request->d[$i];
-                    }
-
-                    if ($request->e[$i]) {
-                        $e = $request->e[$i];
-                    }
-
-                    $data = [
-                        'ujian_id' => $ujian->id,
-                        'soal' => $request->pertanyaan[$i],
-                        'a' => $request->a[$i],
-                        'b' => $request->b[$i],
-                        'c' => $request->c[$i],
-                        'd' => $d,
-                        'e' => $e,
-                        'jawaban' => $request->jawaban[$i],
-                    ];
-
-                    if ($request->pertanyaan[$i]) {
-                        SoalUjianMultiple::create($data);
-                    }
-                }
+                SoalUjianMultiple::create([
+                    'ujian_id' => $ujian->id,
+                    'soal' => $request->pertanyaan[$i],
+                    'a' => $request->a[$i],
+                    'b' => $request->b[$i],
+                    'c' => $request->c[$i],
+                    'd' => $d,
+                    'e' => $e,
+                    'jawaban' => $request->jawaban[$i],
+                ]);
             }
         } else {
-            if ($request->jumlahSoal) {
-                for ($i = 0; $i < count($request->jumlahSoal); $i++) {
-                    $d = null;
-                    $e = null;
+            for ($i = 0; $i < count($request->jumlahSoal); $i++) {
+                $d = $request->d[$i] ?? null;
+                $e = $request->e[$i] ?? null;
 
-                    if ($request->d[$i]) {
-                        $d = $request->d[$i];
-                    }
+                Kecermatan::create([
+                    'ujian_id' => $ujian->id,
+                    'a' => $request->a[$i],
+                    'b' => $request->b[$i],
+                    'c' => $request->c[$i],
+                    'd' => $d,
+                    'e' => $e,
+                    'jumlah_soal' => $request->jumlahSoal[$i],
+                ]);
 
-                    if ($request->e[$i]) {
-                        $e = $request->e[$i];
-                    }
-
-                    $data = [
-                        'ujian_id' => $ujian->id,
-                        // 'soal' => $request->pertanyaan[$i],
-                        'a' => $request->a[$i],
-                        'b' => $request->b[$i],
-                        'c' => $request->c[$i],
-                        'd' => $d,
-                        'e' => $e,
-                        'jumlah_soal' => $request->jumlahSoal[$i],
-                    ];
-
-                    if ($request->jumlahSoal[$i]) {
-                        Kecermatan::create($data);
-                        $data = [
-                            "jumlah_kolom" => count($request->jumlahSoal)
-                        ];
-
-                        $ujian->update($data);
-                    }
-                }
+                $ujian->update([
+                    'jumlah_kolom' => count($request->jumlahSoal)
+                ]);
             }
         }
 
-        $kelasMapel = KelasMapel::where('mapel_id', $request->mapelId)->where('kelas_id', $id)->first();
-        $message = 'tambah';
-
         $assignedKelas = DashboardController::getAssignedClass();
-
-        return redirect(route('viewKelasMapel', ['assignedKelas' => $assignedKelas, 'mapel' => $request->mapelId, 'token' => encrypt($id), 'mapel_id' => $request->mapelId]))->with('success', 'Data Berhasil di ' . $message);
+        return redirect(route('viewKelasMapel', ['assignedKelas' => $assignedKelas, 'mapel' => $request->mapelId, 'token' => encrypt($id), 'mapel_id' => $request->mapelId]))->with('success', 'Data Berhasil di tambah');
     }
 
     public function viewUjian($token, Request $request)
@@ -193,61 +140,43 @@ class UjianController extends Controller
         $roles = DashboardController::getRolesName();
         $ujian = Ujian::where('id', $ujianId)->first();
         $kelas = Kelas::where('id', $kelasMapel['kelas_id'])->first();
-
         $assignedKelas = DashboardController::getAssignedClass();
 
         return view('menu.pengajar.ujian.viewUjian', ['assignedKelas' => $assignedKelas, 'title' => 'Tambah Ujian', 'ujian' => $ujian, 'roles' => $roles, 'kelas' => $kelas, 'mapel' => $mapel, 'tipe' => $ujian['tipe']]);
     }
 
-
     public function ujianUpdateNilai(Request $request)
     {
-        // dd($request);
         $id = decrypt($request->token);
         for ($i = 0; $i < count($request->nilai); $i++) {
-            // Memeriksa apakah nilai tidak sama dengan null dan tidak sama dengan string kosong
             if ($request->nilai[$i] !== null && $request->nilai[$i] !== '') {
                 $exist = UserJawaban::where('user_id', $request->siswaId[$i])->where('essay_id', $request->soalId[$i])->first();
-
                 $nilai = $request->nilai[$i];
+                $nilai = max(0, min($nilai, 100));
 
-                if ($nilai >= 100) {
-                    $nilai = 100;
-                } elseif ($nilai <= 0) {
-                    $nilai = 0;
-                }
-
-                // dd($exist);
                 if ($exist) {
-                    $data = [
-                        'nilai' => $nilai,
-                    ];
-                    $exist->update($data);
+                    $exist->update(['nilai' => $nilai]);
                 } else {
-                    $data = [
+                    UserJawaban::create([
                         'multiple_id' => null,
                         'essay_id' => $request->soalId[$i],
                         'user_id' => $request->siswaId[$i],
                         'nilai' => $nilai,
-                    ];
-                    UserJawaban::create($data);
+                    ]);
                 }
             }
         }
-
         return redirect()->back()->with('success', 'Nilai Telah diPerbaharui');
     }
 
     public function viewUpdateUjian($token, Request $request)
     {
         $ujianId = decrypt($token);
-
         $mapel = Mapel::where('id', $request->mapelId)->first();
         $kelasMapel = KelasMapel::where('kelas_id', $request->kelasId)->where('mapel_id', $request->mapelId)->first();
         $roles = DashboardController::getRolesName();
         $ujian = Ujian::where('id', $ujianId)->first();
         $kelas = Kelas::where('id', $kelasMapel['kelas_id'])->first();
-
         $assignedKelas = DashboardController::getAssignedClass();
 
         return view('menu.pengajar.ujian.viewUpdateUjian', ['assignedKelas' => $assignedKelas, 'tipe' => $request->type, 'title' => 'Tambah Ujian', 'ujian' => $ujian, 'roles' => $roles, 'kelas' => $kelas, 'mapel' => $mapel]);
@@ -255,34 +184,23 @@ class UjianController extends Controller
 
     public function updateUjian(Request $request)
     {
-        // dd($request);
-        // try {
-        if (!$request->name) {
-            $name = 'Ujian';
-        }
-
+        $name = $request->name ?? 'Ujian';
         $id = decrypt($request->kelasId);
         $kelasMapel = KelasMapel::where('mapel_id', $request->mapelId)->where('kelas_id', $id)->first();
-        $isHidden = 1;
-
-        if ($request->opened) {
-            $isHidden = 0;
-        }
-        // dd($isHidden);
-
+        $isHidden = $request->opened ? 0 : 1;
         $ujianId = decrypt($request->token);
         $tanggalWaktuIndonesia = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $request->due);
+
         $data = [
-            'name' => $request->name,
+            'name' => $name,
             'isHidden' => $isHidden,
             'time' => $request->time,
             'due' => $tanggalWaktuIndonesia,
         ];
 
-        $ujian = Ujian::where('id', $ujianId)->update($data);
+        Ujian::where('id', $ujianId)->update($data);
 
         $temp = null;
-
         if ($request->tipe == 'essay') {
             $temp = SoalUjianEssay::where('ujian_id', $ujianId)->get();
         } elseif ($request->tipe == 'multiple') {
@@ -292,156 +210,94 @@ class UjianController extends Controller
         }
 
         $soalIdRequest = $request->pertanyaanId;
+        $soalUjianIds = [];
 
         foreach ($temp as $key) {
             $soalUjianIds[] = $key->id;
         }
-        $idToDelete = null;
-
-        if ($soalIdRequest && count($temp) > 0) {
-            $idToDelete = array_diff($soalUjianIds, $soalIdRequest);
-        }
+        $idToDelete = array_diff($soalUjianIds, $soalIdRequest);
 
         if ($request->tipe == 'essay') {
             if ($idToDelete) {
                 SoalUjianEssay::whereIn('id', $idToDelete)->delete();
             }
+            foreach ($request->pertanyaan as $i => $pertanyaan) {
+                $exist = SoalUjianEssay::find($request->pertanyaanId[$i]);
 
-            if ($request->pertanyaan) {
-                for ($i = 0; $i < count($request->pertanyaan); $i++) {
-                    $exist = 0;
+                $data = [
+                    'ujian_id' => $ujianId,
+                    'soal' => $pertanyaan,
+                ];
 
-                    if ($request->pertanyaanId[$i]) {
-                        $exist = SoalUjianEssay::where('id', $request->pertanyaanId[$i])->first();
-                    }
-
-                    // Data Building
-                    $data = [
-                        'ujian_id' => $ujianId,
-                        'soal' => $request->pertanyaan[$i],
-                    ];
-
-                    if ($exist && $request->pertanyaan[$i]) {
-                        SoalUjianEssay::where('id', $request->pertanyaanId[$i])->update($data);
-                    } elseif ($request->pertanyaan[$i]) {
-                        SoalUjianEssay::create($data);
-                    }
+                if ($exist) {
+                    $exist->update($data);
+                } elseif ($pertanyaan) {
+                    SoalUjianEssay::create($data);
                 }
             }
         } elseif ($request->tipe == 'multiple') {
-
             if ($idToDelete) {
                 SoalUjianMultiple::whereIn('id', $idToDelete)->delete();
             }
+            foreach ($request->pertanyaan as $i => $pertanyaan) {
+                $exist = SoalUjianMultiple::find($request->pertanyaanId[$i]);
 
-            if ($request->pertanyaan) {
-                for ($i = 0; $i < count($request->pertanyaan); $i++) {
-                    $exist = 0;
+                $data = [
+                    'ujian_id' => $ujianId,
+                    'soal' => $pertanyaan,
+                    'a' => $request->a[$i],
+                    'b' => $request->b[$i],
+                    'c' => $request->c[$i],
+                    'd' => $request->d[$i] ?? null,
+                    'e' => $request->e[$i] ?? null,
+                    'jawaban' => $request->jawaban[$i],
+                ];
 
-                    if ($request->pertanyaanId[$i]) {
-                        $exist = SoalUjianMultiple::where('id', $request->pertanyaanId[$i])->first();
-                    }
-
-                    // Data Building
-                    $d = null;
-                    $e = null;
-
-                    if ($request->d[$i]) {
-                        $d = $request->d[$i];
-                    }
-
-                    if ($request->e[$i]) {
-                        $e = $request->e[$i];
-                    }
-
-                    $data = [
-                        'ujian_id' => $ujianId,
-                        'soal' => $request->pertanyaan[$i],
-                        'a' => $request->a[$i],
-                        'b' => $request->b[$i],
-                        'c' => $request->c[$i],
-                        'd' => $d,
-                        'e' => $e,
-                        'jawaban' => $request->jawaban[$i],
-                    ];
-
-                    if ($exist) {
-                        SoalUjianMultiple::where('id', $request->pertanyaanId[$i])->update($data);
-                    } else {
-                        SoalUjianMultiple::create($data);
-                    }
+                if ($exist) {
+                    $exist->update($data);
+                } elseif ($pertanyaan) {
+                    SoalUjianMultiple::create($data);
                 }
             }
         } elseif ($request->tipe == 'kecermatan') {
-
             if ($idToDelete) {
                 Kecermatan::whereIn('id', $idToDelete)->delete();
             }
+            foreach ($request->pertanyaanId as $i => $pertanyaanId) {
+                $exist = Kecermatan::find($pertanyaanId);
 
-            if ($request->pertanyaanId) {
-                // dd(count($request->pertanyaanId));
-                for ($i = 0; $i < count($request->pertanyaanId); $i++) {
-                    $exist = 0;
+                $data = [
+                    'ujian_id' => $ujianId,
+                    'a' => $request->a[$i],
+                    'b' => $request->b[$i],
+                    'c' => $request->c[$i],
+                    'd' => $request->d[$i] ?? null,
+                    'e' => $request->e[$i] ?? null,
+                    'jumlah_soal' => $request->jumlahSoal[$i],
+                ];
 
-                    if ($request->pertanyaanId[$i]) {
-                        $exist = Kecermatan::where('id', $request->pertanyaanId[$i])->first();
-                    }
-
-                    // Data Building
-                    $d = null;
-                    $e = null;
-
-                    if ($request->d[$i]) {
-                        $d = $request->d[$i];
-                    }
-
-                    if ($request->e[$i]) {
-                        $e = $request->e[$i];
-                    }
-
-                    $data = [
-                        'ujian_id' => $ujianId,
-                        'a' => $request->a[$i],
-                        'b' => $request->b[$i],
-                        'c' => $request->c[$i],
-                        'd' => $d,
-                        'e' => $e,
-                        // 'jawaban' => $request->jawaban[$i],
-                        'jumlah_soal' => $request->jumlahSoal[$i],
-                    ];
-
-                    if ($exist) {
-                        Kecermatan::where('id', $request->pertanyaanId[$i])->update($data);
-                    } else {
-                        Kecermatan::create($data);
-                    }
+                if ($exist) {
+                    $exist->update($data);
+                } else {
+                    Kecermatan::create($data);
                 }
             }
         }
 
-        $message = 'Update';
         $assignedKelas = DashboardController::getAssignedClass();
-
-        return redirect(route('viewKelasMapel', ['assignedKelas' => $assignedKelas, 'mapel' => $request->mapelId, 'token' => encrypt($id), 'mapel_id' => $request->mapelId]))->with('success', 'Data Berhasil di ' . $message);
+        return redirect(route('viewKelasMapel', ['assignedKelas' => $assignedKelas, 'mapel' => $request->mapelId, 'token' => encrypt($id), 'mapel_id' => $request->mapelId]))->with('success', 'Data Berhasil di Update');
     }
 
-    // Export Import
     public function contohEssay()
     {
         $file = public_path() . '/examples/contoh-data-essay.xls';
-
         return response()->download($file, 'contoh-essay.xls');
     }
 
-    /**
-     * Import data pengajar dari file Excel.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls', // Sesuaikan dengan jenis file Excel yang diizinkan
+            'file' => 'required|mimes:xlsx,xls',
         ]);
         session()->forget('soal', []);
         session()->forget('info', []);
@@ -450,23 +306,17 @@ class UjianController extends Controller
         array_push($info, $request->name);
         array_push($info, $request->time);
         array_push($info, $request->due);
-        session(['info' => $info]); // Menyimpan kembali array $soal ke dalam sesi 'soal'
+        session(['info' => $info]);
 
-        // Proses impor data dari Excel
         try {
             if ($request->tipe == 'essay') {
-                Excel::import(new SoalUjianImport, $request->file('file')); // Gantilah dengan nama sesuai nama kelas impor Anda
-
-                // dd(session('info')[0]);
+                Excel::import(new SoalUjianImport, $request->file('file'));
                 return redirect()->back()->with('soalEssay', session('soal'))->with('info', session('info'));
             } elseif ($request->tipe == 'multiple' || $request->tipe == 'quiz') {
-                Excel::import(new SoalUjianImport, $request->file('file')); // Gantilah dengan nama sesuai nama kelas impor Anda
-
+                Excel::import(new SoalUjianImport, $request->file('file'));
                 return redirect()->back()->with('soalMultiple', session('soal'))->with('info', session('info'));
             }
         } catch (\Exception $e) {
-            dd(session('soal'));
-
             return redirect()->back()->with('error', 'action gagal')->with('info', session('info'));
         }
     }
@@ -474,62 +324,43 @@ class UjianController extends Controller
     public function contohMultiple()
     {
         $file = public_path() . '/examples/contoh-data-multiple.xls';
-
         return response()->download($file, 'contoh-multiple.xls');
     }
 
     public function ujianAccess($token, Request $request)
     {
-        // ujian id
         $id = decrypt($token);
         $ujian = Ujian::where('id', $id)->first();
-
         $userCommit = UserCommit::where('user_id', Auth()->User()->id)->where('ujian_id', $ujian['id'])->first();
-
-
         $mapel = Mapel::where('id', $request->mapelId)->first();
         $kelas = Kelas::where('id', $request->kelasId)->first();
         $data = [
             'content' => $ujian,
             'tipe' => $ujian['tipe'],
         ];
-
         $roles = DashboardController::getRolesName();
         $assignedKelas = DashboardController::getAssignedClass();
-        $quizCommit = 0;
-        if ($ujian['tipe'] == 'quiz') {
-            if ($userCommit) {
-                $quizCommit = 1;
-            }
+        $quizCommit = $ujian['tipe'] == 'quiz' && $userCommit ? 1 : 0;
+
+        if ($userCommit && $ujian['tipe'] != 'quiz' && $userCommit['status'] == 'active') {
+            return redirect(route('userUjian', ['ujian' => $ujian['name'], 'token' => encrypt($ujian['id'])]));
         }
 
-        if ($userCommit && $ujian['tipe'] != 'quiz') {
-            if ($userCommit['status'] == 'active') {
-                return redirect(route('userUjian', ['ujian' => $ujian['name'], 'token' => encrypt($ujian['id'])]));
-            }
-        }
-
-        return view('menu.siswa.ujian.ujianAccess', ['quizCommit' =>   $quizCommit, 'ujian' => $ujian, 'userCommit' => $userCommit, 'assignedKelas' => $assignedKelas, 'tipe' => $data['tipe'], 'kelas' => $kelas, 'mapel' => $mapel, 'title' => 'Tambah Ujian', 'ujian' => $ujian, 'roles' => $roles]);
+        return view('menu.siswa.ujian.ujianAccess', ['quizCommit' => $quizCommit, 'ujian' => $ujian, 'userCommit' => $userCommit, 'assignedKelas' => $assignedKelas, 'tipe' => $data['tipe'], 'kelas' => $kelas, 'mapel' => $mapel, 'title' => 'Tambah Ujian', 'ujian' => $ujian, 'roles' => $roles]);
     }
 
     public function startUjian($token)
     {
         $ujianId = decrypt($token);
-
         $ujian = Ujian::find($ujianId);
 
-        // if ($ujian->tipe == 'multiple') {
-        // }
-
-        $data = [
-            'user_id' => auth()->user()->id,  // Perhatikan perubahan pada 'Auth' menjadi 'auth' dan 'User' menjadi 'user'
+        UserCommit::create([
+            'user_id' => auth()->user()->id,
             'ujian_id' => $ujianId,
             'start_time' => now()->format('Y-m-d H:i:s'),
             'end_time' => now()->addMinutes($ujian->time)->format('Y-m-d H:i:s'),
             'due' => $ujian->due,
-        ];
-
-        UserCommit::create($data);
+        ]);
 
         return redirect(route('userUjian', ['ujian' => $ujian->name, 'token' => encrypt($ujian->id)]));
     }
@@ -546,13 +377,11 @@ class UjianController extends Controller
         }
 
         $ujian = Ujian::find($ujianId);
-
         $roles = DashboardController::getRolesName();
         $assignedKelas = DashboardController::getAssignedClass();
 
         if ($ujian->tipe == 'multiple') {
-            $soalUjianMultiple = $ujian->soalUjianMultiple; // Ambil semua soal dari ujian
-
+            $soalUjianMultiple = $ujian->soalUjianMultiple;
 
             if ($ujian->tipe == 'multiple' && $userCommitFirst['status'] == 'selesai') {
                 foreach ($soalUjianMultiple as $key) {
@@ -561,45 +390,39 @@ class UjianController extends Controller
                         ->delete();
                 }
                 $userCommitFirst->delete();
-                // dd('here');
             }
-
 
             return view('menu.siswa.ujian.startUjianMultiple', [
                 'userCommit' => $userCommit,
                 'ujian' => $ujian,
-                'soalUjianMultiple' => $soalUjianMultiple, // Kirim data soal ke view
+                'soalUjianMultiple' => $soalUjianMultiple,
                 'title' => $ujian->name,
                 'roles' => $roles,
                 'assignedKelas' => $assignedKelas,
             ]);
         } elseif ($ujian->tipe == 'kecermatan') {
-
             $soalUjianMultiple = $ujian->soalUjianMultiple;
 
             if ($userCommit->status == 'active' || $userCommit->status == 'selesai') {
                 foreach ($ujian->Kecermatan as $key) {
                     UserJawabanKecermatan::where('kecermatan_id', $key->id)->delete();
                 }
-                // dd($ujian->Kecermatan);
-                // dd("here2");
-                // userCommit::where('ujian_id', $ujian->id)->delete();
             }
-            // dd($userCommit->status);
+
             foreach ($ujian->Kecermatan as $key) {
                 for ($i = 0; $i < $key->jumlah_soal; $i++) {
                     $letters = [$key->a, $key->b, $key->c];
 
-                    if ($key->d !== null) { // Include D if it's not null
+                    if ($key->d !== null) {
                         $letters[] = $key->d;
                     }
 
-                    if ($key->e !== null) { // Include E if it's not null
+                    if ($key->e !== null) {
                         $letters[] = $key->e;
                     }
 
                     shuffle($letters);
-                    $answer = array_pop($letters); // Remove one letter to be the answer
+                    $answer = array_pop($letters);
 
                     if ($key->a == $answer) {
                         $answer = "a";
@@ -613,21 +436,18 @@ class UjianController extends Controller
                         $answer = "e";
                     }
 
-                    $soal = implode('', $letters); // Convert the array to a string
+                    $soal = implode('', $letters);
 
-                    $data = [
+                    UserJawabanKecermatan::create([
                         "user_id" => auth()->user()->id,
                         "soal" => $soal,
                         "jawaban" => $answer,
                         "kecermatan_id" => $key->id,
-                    ];
-
-                    UserJawabanKecermatan::create($data);
+                    ]);
                 }
             }
 
-            $data = ["status" => "selesai"];
-            $userCommit->update($data);
+            $userCommit->update(["status" => "selesai"]);
 
             $userJawabanKecermatan = UserJawabanKecermatan::where('user_id', Auth()->user()->id)
                 ->whereIn('kecermatan_id', $ujian->Kecermatan->pluck('id'))
@@ -636,18 +456,18 @@ class UjianController extends Controller
             return view('menu.siswa.ujian.startUjianKecermatan', [
                 'userCommit' => $userCommit,
                 'ujian' => $ujian,
-                'userJawabanKecermatan' => $userJawabanKecermatan, // Kirim data soal ke view
+                'userJawabanKecermatan' => $userJawabanKecermatan,
                 'title' => $ujian->name,
                 'roles' => $roles,
                 'assignedKelas' => $assignedKelas,
             ]);
         } else {
-            $soalUjianEssay = $ujian->SoalUjianEssay; // Ambil semua soal dari ujian
+            $soalUjianEssay = $ujian->SoalUjianEssay;
 
             return view('menu.siswa.ujian.startUjian', [
                 'userCommit' => $userCommit,
                 'ujian' => $ujian,
-                'soalUjianEssay' => $soalUjianEssay, // Kirim data soal ke view
+                'soalUjianEssay' => $soalUjianEssay,
                 'title' => $ujian->name,
                 'roles' => $roles,
                 'assignedKelas' => $assignedKelas,
@@ -655,24 +475,18 @@ class UjianController extends Controller
         }
     }
 
-
-
     public function simpanJawaban(Request $request)
     {
         $soalId = $request->input('soal_id');
         $jawaban = $request->input('jawaban');
 
-        // return response()->json(['message' => $soalId]);
-        // Periksa apakah jawaban sudah ada atau perlu dibuat
         $existingJawaban = UserJawaban::where('user_id', auth()->user()->id)
             ->where('essay_id', $soalId)
             ->first();
 
         if ($existingJawaban) {
-            // Jika jawaban sudah ada, perbarui jawaban
             $existingJawaban->update(['user_jawaban' => $jawaban]);
         } else {
-            // Jika jawaban belum ada, buat jawaban baru
             UserJawaban::create([
                 'user_id' => auth()->user()->id,
                 'essay_id' => $soalId,
@@ -682,22 +496,19 @@ class UjianController extends Controller
 
         return response()->json(['message' => 'Jawaban berhasil disimpan.']);
     }
+
     public function simpanJawabanKecermatan(Request $request)
     {
         $soalId = $request->input('soal_id');
         $jawaban = $request->input('jawaban');
 
-        // return response()->json(['message' => $soalId]);
-        // Periksa apakah jawaban sudah ada atau perlu dibuat
         $existingJawaban = UserJawabanKecermatan::where('user_id', auth()->user()->id)
             ->where('id', $soalId)
             ->first();
 
         if ($existingJawaban) {
-            // Jika jawaban sudah ada, perbarui jawaban
             $existingJawaban->update(['jawaban_user' => $jawaban]);
         } else {
-            // Jika jawaban belum ada, buat jawaban baru
             UserJawabanKecermatan::create([
                 'user_id' => auth()->user()->id,
                 'essay_id' => $soalId,
@@ -710,11 +521,8 @@ class UjianController extends Controller
 
     public function getJawaban(Request $request)
     {
-        // return response()->json(['jawaban' => $request->input()]);
-        // Mengambil jawaban dari database berdasarkan ID soal
         $jawaban = UserJawaban::where('essay_id', $request->soal_id)->where('user_id', Auth()->User()->id)->first();
 
-        // return response()->json(['jawaban' => $jawaban]);
         if ($jawaban) {
             return response()->json(['jawaban' => $jawaban->user_jawaban]);
         } else {
@@ -724,11 +532,8 @@ class UjianController extends Controller
 
     public function getJawabanMultiple(Request $request)
     {
-        // return response()->json(['jawaban' => $request->input()]);
-        // Mengambil jawaban dari database berdasarkan ID soal
         $jawaban = UserJawaban::where('multiple_id', $request->soal_id)->where('user_id', Auth()->User()->id)->first();
 
-        // return response()->json(['jawaban' => $jawaban]);
         if ($jawaban) {
             return response()->json(['jawaban' => $jawaban->user_jawaban]);
         } else {
@@ -739,52 +544,28 @@ class UjianController extends Controller
     public function selesaiUjian(Request $request)
     {
         $id = decrypt($request->userCommit);
-
         $userCommit = UserCommit::where('id', $id)->first();
-
-        $data = [
-            'status' => 'selesai',
-        ];
-
-        $userCommit->update($data);
-
-        $ujian = Ujian::where('id', $userCommit['id'])->first();
-        $kelasMapel = KelasMapel::where('id', $ujian['id'])->first();
-
+        $userCommit->update(['status' => 'selesai']);
         return redirect('home')->with('success', 'Ujian berhasil di submit');
     }
 
     public function selesaiUjianMultiple(Request $request)
     {
-
         try {
             $id = decrypt($request->userCommit);
-
             $userCommit = UserCommit::where('id', $id)->first();
-
-            $data = [
-                'status' => 'selesai',
-            ];
-
-            $userCommit->update($data);
-
+            $userCommit->update(['status' => 'selesai']);
             $ujian = Ujian::where('id', $userCommit['ujian_id'])->first();
-
             $countUjian = count($ujian->SoalUjianMultiple);
-            // dd($countUjian);
-            $jawabanUser = UserJawaban::where('multiple_id', $ujian['id'])->where('user_id', Auth()->User()->id)->get();
-
             $nilaiPerSoal = 100 / $countUjian;
-            if (count($jawabanUser) > 0) {
-                foreach ($ujian->SoalUjianMultiple as $key) {
-                    $jawabanUser = UserJawaban::where('multiple_id', $key->id)->where('user_id', Auth()->User()->id)->first();
-                    // dd($key->jawaban, $jawabanUser['user_jawaban'], $key->id);
+
+            foreach ($ujian->SoalUjianMultiple as $key) {
+                $jawabanUser = UserJawaban::where('multiple_id', $key->id)->where('user_id', Auth()->User()->id)->first();
+                if ($jawabanUser) {
                     if (strcasecmp($key->jawaban, $jawabanUser['user_jawaban']) === 0) {
-                        // dd('benar');
-                        UserJawaban::where('multiple_id', $key->id)->where('user_id', Auth()->User()->id)->update(['nilai' => $nilaiPerSoal]);
+                        $jawabanUser->update(['nilai' => $nilaiPerSoal]);
                     } else {
-                        // dd('salah');
-                        UserJawaban::where('multiple_id', $key->id)->where('user_id', Auth()->User()->id)->update(['nilai' => 0]);
+                        $jawabanUser->update(['nilai' => 0]);
                     }
                 }
             }
@@ -793,6 +574,7 @@ class UjianController extends Controller
             return redirect('home')->with('success', 'Ujian berhasil di submit');
         }
     }
+
     public function selesaiUjianKecermatan(Request $request)
     {
         return redirect('home')->with('success', 'Ujian berhasil di submit');
@@ -803,17 +585,13 @@ class UjianController extends Controller
         $soalId = $request->input('soal_id');
         $jawaban = $request->input('jawaban');
 
-        // return response()->json(['message' => $soalId]);
-        // Periksa apakah jawaban sudah ada atau perlu dibuat
         $existingJawaban = UserJawaban::where('user_id', auth()->user()->id)
             ->where('multiple_id', $soalId)
             ->first();
 
         if ($existingJawaban) {
-            // Jika jawaban sudah ada, perbarui jawaban
             $existingJawaban->update(['user_jawaban' => $jawaban]);
         } else {
-            // Jika jawaban belum ada, buat jawaban baru
             UserJawaban::create([
                 'user_id' => auth()->user()->id,
                 'multiple_id' => $soalId,
